@@ -1,0 +1,17 @@
+{
+  "name": "ubahn-surfers-three",
+  "version": "1.0.0",
+  "description": "A Subway Surfers-like game using Three.js with a German U-Bahn theme",
+  "main": "index.js",
+  "scripts": {
+    "start": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.160.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.10"
+  }
+}

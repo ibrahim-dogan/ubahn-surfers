@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>UBahn Surfers</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: Arial, sans-serif;
+            touch-action: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #score-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 24px;
+            z-index: 100;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 48px;
+            text-align: center;
+            display: none;
+            z-index: 100;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            max-width: 90%;
+        }
+        @media (max-width: 768px) {
+            #game-over {
+                font-size: 32px;
+                padding: 20px;
+            }
+            #game-over h2 {
+                font-size: 36px;
+                margin-top: 0;
+            }
+        }
+        .button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 20px 0;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .button:hover, .button:active {
+            background-color: #45a049;
+        }
+        #restart-button {
+            background-color: #4CAF50;
+        }
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        #start-screen h1 {
+            color: white;
+            font-size: 64px;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        @media (max-width: 768px) {
+            #start-screen h1 {
+                font-size: 42px;
+            }
+        }
+        #start-button {
+            background-color: #4CAF50;
+            font-size: 24px;
+        }
+        .instructions {
+            color: white;
+            font-size: 18px;
+            text-align: center;
+            margin: 20px;
+            max-width: 600px;
+        }
+        @media (max-width: 768px) {
+            .instructions {
+                font-size: 16px;
+                margin: 10px;
+            }
+        }
+        .powerup-info {
+            margin-top: 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            max-width: 600px;
+            width: 100%;
+        }
+        .powerup-info h3 {
+            color: #FFD700;
+            margin-top: 0;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .powerup-list {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .powerup-item {
+            margin: 5px;
+            width: 110px;
+            text-align: center;
+            padding: 5px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        @media (max-width: 480px) {
+            .powerup-item {
+                width: 85px;
+                font-size: 12px;
+            }
+        }
+        .powerup-item span {
+            display: block;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+        .magnet {
+            background-color: rgba(255, 0, 0, 0.3);
+            border: 1px solid #FF0000;
+        }
+        .shield {
+            background-color: rgba(0, 170, 255, 0.3);
+            border: 1px solid #00AAFF;
+        }
+        .multiplier {
+            background-color: rgba(0, 255, 0, 0.3);
+            border: 1px solid #00FF00;
+        }
+        #game-speed {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 16px;
+            z-index: 100;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .powerup-notification {
+            animation: fadeOut 2s forwards, bounce 0.5s ease infinite;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        #orientation-message {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            font-size: 24px;
+            text-align: center;
+            padding: 20px;
+        }
+        @media screen and (max-height: 480px) and (orientation: landscape) {
+            #orientation-message {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="score-display">Score: 0</div>
+        <div id="game-speed">Speed: 15</div>
+        <div id="game-over">
+            <h2>Game Over!</h2>
+            <p>Your score: <span id="final-score">0</span></p>
+            <button id="restart-button" class="button">Play Again</button>
+        </div>
+        <div id="start-screen">
+            <h1>UBahn Surfers</h1>
+            <div class="instructions">
+                <p>Use A/D or Left/Right Arrow keys to move side to side</p>
+                <p>Use Space to jump over obstacles</p>
+                <p>On mobile, use the on-screen controls</p>
+            </div>
+            <div class="powerup-info">
+                <h3>Power-ups</h3>
+                <div class="powerup-list">
+                    <div class="powerup-item magnet">
+                        <span>Magnet</span>
+                        Attracts coins from a distance
+                    </div>
+                    <div class="powerup-item shield">
+                        <span>Shield</span>
+                        Protects from one obstacle hit
+                    </div>
+                    <div class="powerup-item multiplier">
+                        <span>Multiplier</span>
+                        Doubles your score
+                    </div>
+                </div>
+            </div>
+            <button id="start-button" class="button">Start Game</button>
+        </div>
+    </div>
+    <div id="orientation-message">
+        <p>Please rotate your device to portrait mode for the best experience</p>
+        <div style="transform: rotate(90deg); font-size: 42px; margin: 20px;">📱↻</div>
+    </div>
+    <script type="module" src="./src/main.js"></script>
+</body>
+</html> 
